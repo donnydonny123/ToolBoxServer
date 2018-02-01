@@ -2,6 +2,9 @@
 
 ## little practice of [kotlin](https://github.com/donnydonny123/ToolBox) and flask server
 
+# Day 4
+- add file info (last modified time (use for sorting))
+
 # Day 3 
 - auth function <http://flask.pocoo.org/snippets/8/>
 - send file through index not filename

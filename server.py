@@ -1,6 +1,7 @@
 from flask import Flask, send_from_directory, Response, jsonify, request
 from functools import wraps
 import os
+import time
 import config
 app = Flask(__name__)
 @app.route("/")
@@ -29,22 +30,32 @@ def requires_auth(f):
         return f(*args, **kwargs)
     return decorated
 
+def getListOfFileInfo():
+    listOfFiles = os.listdir(config.file_directory)
+    fileInfos = []
+    index = 0
+    for file in listOfFiles:
+        time_in_epoches = os.path.getmtime(os.path.join(config.file_directory, file))
+        lastModifiedTime = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(time_in_epoches))
+        fileInfos.append({"filename":file, "lastModifiedTime": lastModifiedTime, "index": index})
+        index += 1
+    return fileInfos
 
 @app.route("/files")
 @requires_auth
 def get_file_list():
-    return jsonify(os.listdir(config.file_directory))
+    return jsonify(getListOfFileInfo())
 
 @app.route("/files/<int:fileIndex>", methods=["GET"])
 @requires_auth
-def get_file_by_name(fileIndex):
-    listOfFiles = os.listdir(config.file_directory)
+def get_file_by_index(fileIndex):
+    listOfFiles = getListOfFileInfo()
     print(fileIndex, listOfFiles)
     if fileIndex < len(os.listdir(config.file_directory)):
-        return send_from_directory(directory=os.path.abspath(config.file_directory), filename=listOfFiles[fileIndex])
+        return send_from_directory(directory=os.path.abspath(config.file_directory), filename=listOfFiles[fileIndex]['filename'])
     else:
         return Response(
-            filename + " is not found in the server\n",
+            "index:" +str(fileIndex)+ " is not found in the server\n",
             400,
             {'ContentType': 'application/json'}
         )
